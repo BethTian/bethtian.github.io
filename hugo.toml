@@ -1,0 +1,29 @@
+baseURL = "https://bethwjtian.com/"
+languageCode = "en-us"
+title = "Beth Tian"
+theme = "PaperMod"
+[pagination]
+  pagerSize = 10
+
+[params]
+  author = "Beth Tian"
+  description = "Personal academic website and blog"
+  defaultTheme = "auto"   # light / dark / auto
+  ShowReadingTime = true
+  ShowShareButtons = false
+
+# Top menu
+[[menu.main]]
+  name = "About"
+  url = "/about/"
+  weight = 1
+
+[[menu.main]]
+  name = "Blog"
+  url = "/posts/"
+  weight = 2
+
+[[menu.main]]
+  name = "CV"
+  url = "/cv/"
+  weight = 3
