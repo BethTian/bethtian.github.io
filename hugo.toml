@@ -2,6 +2,7 @@ baseURL = "https://bethtian.github.io/"
 languageCode = "en-us"
 title = "Beth Tian"
 theme = "PaperMod"
+mainSections = ["posts"]
 [pagination]
   pagerSize = 10
 
