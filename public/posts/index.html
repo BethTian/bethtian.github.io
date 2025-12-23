@@ -1,7 +1,13 @@
-<!DOCTYPE html>
-<html lang="en" dir="auto" data-theme="auto">
 
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<!doctype html>
+<html lang="zh">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Posts</title>
+  
+  
+  <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="noindex, nofollow">
@@ -72,75 +78,183 @@
     }
 
 </script>
+  <style>
+     
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;margin:0;padding:24px;color:#111}
+    .post{padding:14px 0;border-bottom:1px solid #eee;position:relative}
+    .anchor-dot{position:absolute;left:-40px;top:50%;transform:translateY(-50%);width:12px;height:12px;border-radius:6px;background:#bbb}
+  </style>
 </head>
-<body class="list" id="top">
-    <header class="header">
-    <nav class="nav">
-        <div class="logo">
-            <a href="http://localhost:1313/" accesskey="h" title="Beth Tian (Alt + H)">Beth Tian</a>
-            <div class="logo-switches">
-                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
-                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                    </svg>
-                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
-                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5"></circle>
-                        <line x1="12" y1="1" x2="12" y2="3"></line>
-                        <line x1="12" y1="21" x2="12" y2="23"></line>
-                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                        <line x1="1" y1="12" x2="3" y2="12"></line>
-                        <line x1="21" y1="12" x2="23" y2="12"></line>
-                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <ul id="menu">
-            <li>
-                <a href="http://localhost:1313/about/" title="About">
-                    <span>About</span>
-                </a>
-            </li>
-            <li>
-                <a href="http://localhost:1313/posts/" title="Blog">
-                    <span class="active">Blog</span>
-                </a>
-            </li>
-            <li>
-                <a href="http://localhost:1313/cv/" title="CV">
-                    <span>CV</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-</header>
-<main class="main"> 
-<header class="page-header">
-  <h1>
-    Posts
-  </h1>
-</header>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Hello World
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>This is my first blog post.
-</p>
-  </div>
-  <footer class="entry-footer"><span title='2025-12-22 00:00:00 +0000 UTC'>December 22, 2025</span>&nbsp;·&nbsp;<span>1 min</span>&nbsp;·&nbsp;<span>Beth Tian</span></footer>
-  <a class="entry-link" aria-label="post link to Hello World" href="http://localhost:1313/posts/hello-world/"></a>
-</article>
-    </main>
+<body>
+  
+  
     
+
+<style>
+ 
+.climb-side {
+  position: fixed;
+  right: 24px;
+  top: 10vh;
+  width: 140px;
+  height: 420px;
+  pointer-events: none;
+  z-index: 9999;
+}
+.climb-svg { width:100%; height:100%; display:block; }
+#lottieGirl { position:absolute; width:64px; height:64px; pointer-events:none; will-change:transform; transform-origin:50% 50%; }
+@media (max-width:800px){ .climb-side{display:none;} .anchor-dot{left:-28px;} }
+@media (prefers-reduced-motion:reduce){ .climb-side{display:none!important;} }
+</style>
+
+<div class="climb-side" id="climbSide">
+  <svg class="climb-svg" viewBox="0 0 140 420" preserveAspectRatio="xMidYMid meet" id="ropeSvg">
+    <rect x="55" y="0" width="30" height="420" rx="4" fill="#f5f5f5" />
+    <path id="ropePath" d="" stroke="#9b6b4a" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+    <g id="anchorsGroup"></g>
+  </svg>
+  <div id="lottieGirl" aria-hidden="true"></div>
+</div>
+
+
+<script src="https://unpkg.com/lottie-web@5.10.2/build/player/lottie.min.js"></script>
+
+<script>
+(function(){
+  
+  const posts = Array.from(document.querySelectorAll('.post'));
+  if (!posts.length) return; 
+
+  const ropeSvg = document.getElementById('ropeSvg');
+  const ropePath = document.getElementById('ropePath');
+  const anchorsGroup = document.getElementById('anchorsGroup');
+  const lottieContainer = document.getElementById('lottieGirl');
+
+  
+  const LOTTIE_PATH = '\/abseiling.json'; 
+
+  const lottieAnim = lottie.loadAnimation({
+    container: lottieContainer,
+    renderer: 'svg',
+    loop: false,
+    autoplay: false,
+    path: LOTTIE_PATH
+  });
+
+  let lottieFrames = 100;
+  lottieAnim.addEventListener('DOMLoaded', () => {
+    lottieFrames = Math.max(1, Math.round(lottieAnim.getDuration(true)));
+    lottieAnim.goToAndStop(Math.floor(lottieFrames*0.5), true);
+  });
+
+  
+  const anchors = posts.map((p) => {
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('r',4);
+    c.setAttribute('fill','#6b8cff');
+    anchorsGroup.appendChild(c);
+    return { postEl: p, svgCircle: c };
+  });
+
+  function pageToSvgCoords(pageX, pageY){
+    const svgRect = ropeSvg.getBoundingClientRect();
+    const svgX = ((pageX - svgRect.left) / svgRect.width) * ropeSvg.viewBox.baseVal.width;
+    const svgY = ((pageY - svgRect.top) / svgRect.height) * ropeSvg.viewBox.baseVal.height;
+    return { x: svgX, y: svgY };
+  }
+
+  function updateAnchors(){
+    anchors.forEach(a => {
+      const rect = a.postEl.getBoundingClientRect();
+      
+      const pageX = window.scrollX + rect.left - 40 + (a.postEl.querySelector('.anchor-dot')?.offsetWidth || 8)/2;
+      const pageY = window.scrollY + rect.top + rect.height/2;
+      const svgPt = pageToSvgCoords(pageX, pageY);
+      a.svgCircle.setAttribute('cx', svgPt.x);
+      a.svgCircle.setAttribute('cy', svgPt.y);
+      a.svgPos = svgPt;
+    });
+  }
+
+  function computeActiveIndex(){
+    const viewportCenterY = window.scrollY + window.innerHeight/2;
+    let bestIdx=0, bestDist=Infinity;
+    anchors.forEach((a, idx) => {
+      const rect = a.postEl.getBoundingClientRect();
+      const pageCenterY = window.scrollY + rect.top + rect.height/2;
+      const dist = Math.abs(pageCenterY - viewportCenterY);
+      if (dist < bestDist){ bestDist = dist; bestIdx = idx; }
+    });
+    return bestIdx;
+  }
+
+  let activeIndex = computeActiveIndex();
+  let currentGirlY = ropeSvg.viewBox.baseVal.height / 2;
+  let targetGirlY = currentGirlY;
+  let animating = false;
+
+  function animateStep(){
+    animating = true;
+    currentGirlY += (targetGirlY - currentGirlY) * 0.18;
+    const progress = Math.max(0, Math.min(1, currentGirlY / ropeSvg.viewBox.baseVal.height));
+    const frame = Math.floor(progress * (lottieFrames - 1));
+    if (lottieAnim) lottieAnim.goToAndStop(frame, true);
+
+    const svgRect = ropeSvg.getBoundingClientRect();
+    const visualX = svgRect.left + (ropeSvg.viewBox.baseVal.width/2 / ropeSvg.viewBox.baseVal.width) * svgRect.width;
+    const visualY = svgRect.top + (currentGirlY / ropeSvg.viewBox.baseVal.height) * svgRect.height;
+
+    lottieContainer.style.transform = `translate(${visualX - svgRect.left - (lottieContainer.offsetWidth/2)}px, ${visualY - svgRect.top - (lottieContainer.offsetHeight/2)}px)`;
+
+    const gx = ropeSvg.viewBox.baseVal.width / 2;
+    const gy = currentGirlY;
+    const target = anchors[activeIndex];
+    if (target && target.svgPos) {
+      const tx = target.svgPos.x;
+      const ty = target.svgPos.y;
+      const cx = (gx + tx) / 2 + 10;
+      const cy = (gy + ty) / 2 - Math.abs(gx - tx) * 0.15;
+      const d = `M ${gx} ${gy} Q ${cx} ${cy} ${tx} ${ty}`;
+      ropePath.setAttribute('d', d);
+    }
+
+    if (Math.abs(currentGirlY - targetGirlY) < 0.5) {
+      animating = false;
+    } else {
+      requestAnimationFrame(animateStep);
+    }
+  }
+
+  function animateToActive(){
+    activeIndex = computeActiveIndex();
+    const t = anchors[activeIndex];
+    if (!t || !t.svgPos) return;
+    targetGirlY = t.svgPos.y;
+    if (!animating) requestAnimationFrame(animateStep);
+  }
+
+  window.addEventListener('scroll', () => { updateAnchors(); animateToActive(); }, { passive: true });
+  window.addEventListener('resize', () => { updateAnchors(); animateToActive(); });
+
+  
+  updateAnchors();
+  animateToActive();
+
+})();
+</script>
+
+  
+
+  <main>
+    <h1>Posts</h1>
+    <section>
+      
+      
+      <nav></nav>
+    </section>
+  </main>
+
+  
 <footer class="footer">
         <span>&copy; 2025 <a href="http://localhost:1313/">Beth Tian</a></span> · 
 
@@ -216,6 +330,6 @@
     })
 
 </script>
-</body>
 
+</body>
 </html>

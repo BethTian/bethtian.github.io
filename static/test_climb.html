@@ -3,46 +3,30 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Test Climb - Lottie Demo</title>
+<title>Test Climb - Lottie Demo (Robust)</title>
 <style>
   body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin:0; padding:0; }
   .container { max-width:900px; margin:0 auto; padding:24px; }
   .post { padding:18px 12px; border-bottom:1px solid #eee; position:relative; }
-  .post h2 { margin:0 0 8px 0; font-size:18px; }
-  .post p { margin:0; color:#444; }
+  .anchor-dot { position:absolute; left:-40px; top:50%; transform:translateY(-50%); width:12px; height:12px; border-radius:50%; background:#bbb; box-shadow:0 0 0 3px rgba(200,200,200,0.08); }
 
-  .anchor-dot { position:absolute; left:-40px; top:50%; transform:translateY(-50%); width:12px; height:12px;
-                border-radius:50%; background:#bbb; box-shadow:0 0 0 3px rgba(200,200,200,0.08); }
-
+  /* 侧边容器：确保有最小尺寸，避免 width/height 为 0 */
   .climb-side {
     position: fixed;
     right: 24px;
     top: 10vh;
     width: 140px;
     height: 420px;
+    min-width: 140px;
+    min-height: 420px;
     pointer-events: none;
     z-index: 9999;
   }
   .climb-svg { width:100%; height:100%; display:block; }
-  /* lottie 容器（会被放到侧边面板中间）*/
-  #lottieGirl {
-    position: absolute;
-    width: 64px; height: 64px;
-    left: calc(50% - 32px);
-    top: calc(50% - 32px);
-    pointer-events: none;
-    will-change: transform;
-    transform-origin: 50% 50%;
-  }
+  #lottieGirl { position: absolute; width:64px; height:64px; pointer-events:none; will-change: transform; transform-origin:50% 50%; }
 
-  @media (max-width: 800px) {
-    .climb-side { display:none; }
-    .anchor-dot { left:-28px; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .climb-side { display:none !important; }
-  }
+  @media (max-width: 800px) { .climb-side { display:none; } .anchor-dot { left:-28px; } }
+  @media (prefers-reduced-motion: reduce) { .climb-side { display:none !important; } }
 </style>
 </head>
 <body>
@@ -59,15 +43,12 @@
   <div style="height:1200px"></div>
 </div>
 
-<!-- 侧边固定攀岩区 -->
 <div class="climb-side" id="climbSide">
   <svg class="climb-svg" viewBox="0 0 140 420" preserveAspectRatio="xMidYMid meet" id="ropeSvg">
     <rect x="55" y="0" width="30" height="420" rx="4" fill="#f5f5f5" />
     <path id="ropePath" d="" stroke="#9b6b4a" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" />
     <g id="anchorsGroup"></g>
   </svg>
-
-  <!-- Lottie 容器：我们把动画加载到这里 -->
   <div id="lottieGirl" aria-hidden="true"></div>
 </div>
 
@@ -75,63 +56,94 @@
 <script src="https://unpkg.com/lottie-web@5.10.2/build/player/lottie.min.js"></script>
 
 <script>
+/* Robust version: waits for SVG to have non-zero size, has fallback, ResizeObserver retry */
 (function(){
   const posts = Array.from(document.querySelectorAll('.post'));
+  if (!posts.length) return;
+
   const ropeSvg = document.getElementById('ropeSvg');
   const ropePath = document.getElementById('ropePath');
   const anchorsGroup = document.getElementById('anchorsGroup');
   const lottieContainer = document.getElementById('lottieGirl');
+  const LOTTIE_PATH = '/abseiling.json'; // ensure this file is in static root
 
-  const LOTTIE_PATH = '/abseiling.json'; // ← 确保文件在 static/abseiling.json
-
-  const lottieAnim = lottie.loadAnimation({
-    container: lottieContainer,
-    renderer: 'svg',
-    loop: false,
-    autoplay: false,
-    path: LOTTIE_PATH
-  });
-
+  // load lottie
+  const lottieAnim = lottie.loadAnimation({ container: lottieContainer, renderer: 'svg', loop: false, autoplay: false, path: LOTTIE_PATH });
   let lottieFrames = 100;
   lottieAnim.addEventListener('DOMLoaded', () => {
     lottieFrames = Math.max(1, Math.round(lottieAnim.getDuration(true)));
-    const mid = Math.floor(lottieFrames * 0.5);
-    lottieAnim.goToAndStop(mid, true);
+    lottieAnim.goToAndStop(Math.floor(lottieFrames*0.5), true);
+    // only initialize anchors after lottie is ready (gives time for layout)
+    safeInitialize();
   });
 
-  const anchors = posts.map((p,i) => {
-    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    c.setAttribute('r',4);
-    c.setAttribute('fill','#6b8cff');
-    anchorsGroup.appendChild(c);
-    return { postEl: p, svgCircle: c };
-  });
+  // Utility: get SVG bounding rect safely
+  function getSvgRect() {
+    const r = ropeSvg.getBoundingClientRect();
+    // if width/height are zero return null to indicate not ready
+    if (!r.width || !r.height) return null;
+    return r;
+  }
 
-  function pageToSvgCoords(pageX, pageY){
-    const svgRect = ropeSvg.getBoundingClientRect();
-    const svgX = ((pageX - svgRect.left) / svgRect.width) * ropeSvg.viewBox.baseVal.width;
-    const svgY = ((pageY - svgRect.top) / svgRect.height) * ropeSvg.viewBox.baseVal.height;
+  // Map page coords => svg coords with fallback
+  function pageToSvgCoordsFallback(pageX, pageY) {
+    const vb = ropeSvg.viewBox.baseVal;
+    const rect = getSvgRect();
+    if (!rect) {
+      // fallback: map relative to climb-side container if available
+      const side = document.querySelector('.climb-side');
+      if (side) {
+        const s = side.getBoundingClientRect();
+        if (s.width && s.height) {
+          const sx = Math.max(0, Math.min(1, (pageX - s.left) / s.width));
+          const sy = Math.max(0, Math.min(1, (pageY - s.top) / s.height));
+          return { x: vb.width * sx, y: vb.height * sy };
+        }
+      }
+      // last resort: center of viewBox
+      return { x: vb.width/2, y: vb.height/2 };
+    }
+    const svgX = ((pageX - rect.left) / rect.width) * vb.width;
+    const svgY = ((pageY - rect.top)  / rect.height) * vb.height;
+    if (!isFinite(svgX) || !isFinite(svgY)) return { x: vb.width/2, y: vb.height/2 };
     return { x: svgX, y: svgY };
   }
 
-  function updateAnchors(){
-    anchors.forEach(a => {
-      const rect = a.postEl.getBoundingClientRect();
-      const pageX = window.scrollX + rect.left - 40 + (a.postEl.querySelector('.anchor-dot').offsetWidth/2);
-      const pageY = window.scrollY + rect.top + rect.height/2;
-      const svgPt = pageToSvgCoords(pageX, pageY);
-      a.svgCircle.setAttribute('cx', svgPt.x);
-      a.svgCircle.setAttribute('cy', svgPt.y);
-      a.svgPos = svgPt;
+  // Build anchors in svg (ensures count matches posts)
+  function buildAnchors() {
+    while (anchorsGroup.firstChild) anchorsGroup.removeChild(anchorsGroup.firstChild);
+    posts.forEach(()=> {
+      const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('r', 4);
+      c.setAttribute('fill', '#6b8cff');
+      anchorsGroup.appendChild(c);
     });
   }
 
-  function computeActiveIndex(){
+  function updateAnchors() {
+    const svgRect = getSvgRect();
+    const vb = ropeSvg.viewBox.baseVal;
+    const anchors = Array.from(anchorsGroup.children);
+    posts.forEach((p, i) => {
+      const rect = p.getBoundingClientRect();
+      const dot = p.querySelector('.anchor-dot');
+      const pageX = window.scrollX + rect.left - 40 + (dot ? dot.offsetWidth/2 : 0);
+      const pageY = window.scrollY + rect.top + rect.height/2;
+      const svgPt = pageToSvgCoordsFallback(pageX, pageY);
+      const c = anchors[i];
+      if (c) {
+        c.setAttribute('cx', String(svgPt.x));
+        c.setAttribute('cy', String(svgPt.y));
+        c._svgPos = svgPt;
+      }
+    });
+  }
+
+  function computeActiveIndex() {
     const viewportCenterY = window.scrollY + window.innerHeight/2;
-    let bestIdx = 0;
-    let bestDist = Infinity;
-    anchors.forEach((a, idx) => {
-      const rect = a.postEl.getBoundingClientRect();
+    let bestIdx = 0, bestDist = Infinity;
+    posts.forEach((p, idx) => {
+      const rect = p.getBoundingClientRect();
       const pageCenterY = window.scrollY + rect.top + rect.height/2;
       const dist = Math.abs(pageCenterY - viewportCenterY);
       if (dist < bestDist) { bestDist = dist; bestIdx = idx; }
@@ -139,35 +151,35 @@
     return bestIdx;
   }
 
-  let activeIndex = computeActiveIndex();
+  // animation variables
   let currentGirlY = ropeSvg.viewBox.baseVal.height / 2;
   let targetGirlY = currentGirlY;
   let animating = false;
 
-  function animateStep(){
+  function animateStep() {
     animating = true;
     currentGirlY += (targetGirlY - currentGirlY) * 0.18;
     const progress = Math.max(0, Math.min(1, currentGirlY / ropeSvg.viewBox.baseVal.height));
     const frame = Math.floor(progress * (lottieFrames - 1));
     if (lottieAnim) lottieAnim.goToAndStop(frame, true);
 
-    const svgRect = ropeSvg.getBoundingClientRect();
-    const visualX = svgRect.left + (ropeSvg.viewBox.baseVal.width/2 / ropeSvg.viewBox.baseVal.width) * svgRect.width;
-    const visualY = svgRect.top + (currentGirlY / ropeSvg.viewBox.baseVal.height) * svgRect.height;
+    // update visible position of lottieContainer relative to svg
+    const svgRect = getSvgRect();
+    if (svgRect) {
+      const visualX = svgRect.left + (ropeSvg.viewBox.baseVal.width/2 / ropeSvg.viewBox.baseVal.width) * svgRect.width;
+      const visualY = svgRect.top + (currentGirlY / ropeSvg.viewBox.baseVal.height) * svgRect.height;
+      lottieContainer.style.transform = `translate(${visualX - svgRect.left - (lottieContainer.offsetWidth/2)}px, ${visualY - svgRect.top - (lottieContainer.offsetHeight/2)}px)`;
+    }
 
-    lottieContainer.style.transform = `translate(${visualX - svgRect.left - (lottieContainer.offsetWidth/2)}px, ${visualY - svgRect.top - (lottieContainer.offsetHeight/2)}px)`;
-
+    // update rope path
     const gx = ropeSvg.viewBox.baseVal.width / 2;
     const gy = currentGirlY;
-    const target = anchors[activeIndex];
-    if (target && target.svgPos) {
-      const tx = target.svgPos.x;
-      const ty = target.svgPos.y;
-      const cx = (gx + tx) / 2 + 10;
-      const cy = (gy + ty) / 2 - Math.abs(gx - tx) * 0.15;
-      const d = `M ${gx} ${gy} Q ${cx} ${cy} ${tx} ${ty}`;
-      ropePath.setAttribute('d', d);
-    }
+    const target = Array.from(anchorsGroup.children)[computeActiveIndex()];
+    const tx = target && target._svgPos ? target._svgPos.x : gx;
+    const ty = target && target._svgPos ? target._svgPos.y : gy;
+    const cx = (gx + tx) / 2 + 10;
+    const cy = (gy + ty) / 2 - Math.abs(gx - tx) * 0.15;
+    ropePath.setAttribute('d', `M ${gx} ${gy} Q ${cx} ${cy} ${tx} ${ty}`);
 
     if (Math.abs(currentGirlY - targetGirlY) < 0.5) {
       animating = false;
@@ -176,26 +188,46 @@
     }
   }
 
-  function animateToActive(){
-    activeIndex = computeActiveIndex();
-    const t = anchors[activeIndex];
-    if (!t || !t.svgPos) return;
-    targetGirlY = t.svgPos.y;
+  // animate to current active
+  function animateToActive() {
+    const idx = computeActiveIndex();
+    const target = Array.from(anchorsGroup.children)[idx];
+    if (target && target._svgPos) targetGirlY = target._svgPos.y;
+    else targetGirlY = ropeSvg.viewBox.baseVal.height / 2;
     if (!animating) requestAnimationFrame(animateStep);
   }
 
-  window.addEventListener('scroll', () => {
+  // Use ResizeObserver to detect when svg gets a real size
+  let svgReady = !!getSvgRect();
+  if (!svgReady) {
+    // observe climb-side or svg
+    const side = document.querySelector('.climb-side');
+    const ro = new ResizeObserver(() => {
+      if (getSvgRect()) {
+        svgReady = true;
+        ro.disconnect();
+        // rebuild and update anchors once size is ready
+        buildAnchors();
+        updateAnchors();
+        animateToActive();
+      }
+    });
+    if (side) ro.observe(side);
+    ro.observe(ropeSvg);
+    // also attempt a deferred try (in case ResizeObserver doesn't fire immediately)
+    setTimeout(() => { if (!svgReady) { buildAnchors(); updateAnchors(); animateToActive(); } }, 300);
+  } else {
+    buildAnchors();
     updateAnchors();
     animateToActive();
-  }, { passive: true });
+  }
 
-  window.addEventListener('resize', () => {
-    updateAnchors();
-    animateToActive();
-  });
+  // events
+  window.addEventListener('scroll', () => { if (svgReady) { updateAnchors(); animateToActive(); } }, { passive: true });
+  window.addEventListener('resize', () => { if (svgReady) { updateAnchors(); animateToActive(); } });
 
-  updateAnchors();
-  animateToActive();
+  // If content layout changes after images load etc, try re-run anchors a bit later
+  window.addEventListener('load', () => { setTimeout(()=>{ if (svgReady) { updateAnchors(); animateToActive(); } }, 200); });
 
 })();
 </script>

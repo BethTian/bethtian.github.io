@@ -1,0 +1,41 @@
+{{/* layouts/_default/list.html — safer standalone version (no define) */}}
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{ .Title }}</title>
+  {{ if .IsHome }}<meta name="robots" content="index,follow">{{ end }}
+  {{/* 你可以把主题的 head partial include 进来，如有 baseof.html 的 head partial 可替换这里 */}}
+  {{ partial "head.html" . }}
+  <style>
+    /* 最基本样式，避免完全空白 */
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;margin:0;padding:24px;color:#111}
+    .post{padding:14px 0;border-bottom:1px solid #eee;position:relative}
+    .anchor-dot{position:absolute;left:-40px;top:50%;transform:translateY(-50%);width:12px;height:12px;border-radius:6px;background:#bbb}
+  </style>
+</head>
+<body>
+  {{/* 只在 posts section 加载侧边栏 partial */}}
+  {{ if eq .Section "posts" }}
+    {{ partial "climb_sidebar.html" . }}
+  {{ end }}
+
+  <main>
+    <h1>{{ .Title }}</h1>
+    <section>
+      {{ $paginator := .Paginate (where .Pages "Type" "post") }}
+      {{ range $paginator.Pages }}
+        <article class="post" id="post-{{ .File.BaseFileName }}">
+          <div class="anchor-dot" aria-hidden="true"></div>
+          <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+          <p>{{ .Summary }}</p>
+        </article>
+      {{ end }}
+      <nav>{{ template "_internal/pagination.html" . }}</nav>
+    </section>
+  </main>
+
+  {{ partial "footer.html" . }}
+</body>
+</html>
