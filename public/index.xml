@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>Welcome on Beth Tian</title>
+    <title>Beth Tian</title>
     <link>http://localhost:1313/</link>
-    <description>Recent content in Welcome on Beth Tian</description>
+    <description>Recent content on Beth Tian</description>
     <generator>Hugo -- 0.153.1</generator>
     <language>en-us</language>
     <lastBuildDate>Mon, 22 Dec 2025 00:00:00 +0000</lastBuildDate>
@@ -14,21 +14,33 @@
       <pubDate>Mon, 22 Dec 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/about/</guid>
       <description>&lt;p&gt;I&amp;rsquo;m Beth Tian.&lt;br&gt;
-My research focuses on …&lt;/p&gt;</description>
+I am a Master’s student in Risk Engineering at Duke University, working at the intersection of
+&lt;strong&gt;flood risk modeling, community resilience, and climate adaptation policy&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;My research fousces on climate-driven flooding, multi-hazard risk, and community resilience, with particular interest in how hazards, policy, and socioeconomic conditions shape community-level vulnerability and adaptive capacity. Building on my background in data analytics and my master’s research on flood risk and community resilience, I use quantitative modeling, geospatial analysis, and mixed-methods approaches to assess community flood exposure, analyze resilience dynamics, and support community-engaged climate adaptation and equitable mitigation strategies.&lt;/p&gt;</description>
     </item>
     <item>
       <title>CV</title>
       <link>http://localhost:1313/cv/</link>
       <pubDate>Mon, 22 Dec 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/cv/</guid>
-      <description>&lt;h2 id=&#34;education&#34;&gt;Education&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;Ph.D., Field, University&lt;/li&gt;
-&lt;/ul&gt;
+      <description>&lt;h1 id=&#34;curriculum-vitae&#34;&gt;Curriculum Vitae&lt;/h1&gt;
+&lt;p&gt;&lt;strong&gt;Wenjia (Beth) Tian&lt;/strong&gt;&lt;br&gt;
+M.Eng. in Risk Engineering, Duke University&lt;/p&gt;
+&lt;p&gt;📧 Email: &lt;a href=&#34;mailto:beth.tian@duke.edu&#34;&gt;beth.tian@duke.edu&lt;/a&gt;&lt;br&gt;
+📄 &lt;a href=&#34;http://localhost:1313/files/CV_Beth_Tian_application.pdf&#34;&gt;Download full CV (PDF)&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;education&#34;&gt;Education&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;Duke University&lt;/strong&gt;, Durham, NC&lt;br&gt;
+&lt;em&gt;M.Eng. in Risk Engineering&lt;/em&gt; (Sep 2024 – Present)&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Macau University of Science and Technology&lt;/strong&gt;, Macau&lt;br&gt;
+&lt;em&gt;B.B.A. in Business Analytics&lt;/em&gt; (Sep 2020 – Jun 2024)&lt;/p&gt;
 &lt;h2 id=&#34;experience&#34;&gt;Experience&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;Position, Institution&lt;/li&gt;
-&lt;/ul&gt;</description>
+&lt;/ul&gt;
+&lt;h2 id=&#34;skills&#34;&gt;Skills&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;Programming:&lt;/strong&gt; Python, R, C++, SQL, Git&lt;br&gt;
+&lt;strong&gt;Methods:&lt;/strong&gt; Statistical modeling, time-series analysis, econometrics, machine learning&lt;br&gt;
+&lt;strong&gt;Data:&lt;/strong&gt; Data integration, exploratory factor analysis, regression modeling&lt;/p&gt;</description>
     </item>
     <item>
       <title>Hello World</title>

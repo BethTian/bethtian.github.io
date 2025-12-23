@@ -12,6 +12,16 @@ theme = "PaperMod"
   ShowReadingTime = true
   ShowShareButtons = false
 
+[params.profileMode]
+enabled = true
+title = "Beth Tian"
+subtitle = "PhD Student · Risk Engineering · Duke University"
+imageUrl = "/images/profilepic.jpeg"
+imageTitle = "Beth Tian"
+imageWidth = 160
+imageHeight = 160
+
+
 # Top menu
 [[menu.main]]
   name = "About"
