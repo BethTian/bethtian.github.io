@@ -1,0 +1,154 @@
+<!-- layouts/partials/climb_sidebar.html -->
+<!-- Climb sidebar partial: Lottie-controlled girl + svg rope -->
+<style>
+/* 仅本 partial 的样式（可以移动到主题的主 CSS） */
+.climb-side {
+  position: fixed;
+  right: 24px;
+  top: 10vh;
+  width: 140px;
+  height: 420px;
+  pointer-events: none;
+  z-index: 9999;
+}
+.climb-svg { width:100%; height:100%; display:block; }
+#lottieGirl { position:absolute; width:64px; height:64px; pointer-events:none; will-change:transform; transform-origin:50% 50%; }
+@media (max-width:800px){ .climb-side{display:none;} .anchor-dot{left:-28px;} }
+@media (prefers-reduced-motion:reduce){ .climb-side{display:none!important;} }
+</style>
+
+<div class="climb-side" id="climbSide">
+  <svg class="climb-svg" viewBox="0 0 140 420" preserveAspectRatio="xMidYMid meet" id="ropeSvg">
+    <rect x="55" y="0" width="30" height="420" rx="4" fill="#f5f5f5" />
+    <path id="ropePath" d="" stroke="#9b6b4a" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+    <g id="anchorsGroup"></g>
+  </svg>
+  <div id="lottieGirl" aria-hidden="true"></div>
+</div>
+
+<!-- lottie-web CDN -->
+<script src="https://unpkg.com/lottie-web@5.10.2/build/player/lottie.min.js"></script>
+
+<script>
+(function(){
+  // 选择页面上的每个文章条目 —— 如果你的主题类名不同，请替换 '.post' 为实际选择器
+  const posts = Array.from(document.querySelectorAll('.post'));
+  if (!posts.length) return; // 如果没找到任何 .post，则不启用
+
+  const ropeSvg = document.getElementById('ropeSvg');
+  const ropePath = document.getElementById('ropePath');
+  const anchorsGroup = document.getElementById('anchorsGroup');
+  const lottieContainer = document.getElementById('lottieGirl');
+
+  // Hugo 静态文件路径（abseiling.json 放在 static/ 根）
+  const LOTTIE_PATH = '{{ "abseiling.json" | relURL }}'; // Hugo 会把它渲染成正确路径
+
+  const lottieAnim = lottie.loadAnimation({
+    container: lottieContainer,
+    renderer: 'svg',
+    loop: false,
+    autoplay: false,
+    path: LOTTIE_PATH
+  });
+
+  let lottieFrames = 100;
+  lottieAnim.addEventListener('DOMLoaded', () => {
+    lottieFrames = Math.max(1, Math.round(lottieAnim.getDuration(true)));
+    lottieAnim.goToAndStop(Math.floor(lottieFrames*0.5), true);
+  });
+
+  // 在 svg 上为每个文章创建一个 anchor circle
+  const anchors = posts.map((p) => {
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('r',4);
+    c.setAttribute('fill','#6b8cff');
+    anchorsGroup.appendChild(c);
+    return { postEl: p, svgCircle: c };
+  });
+
+  function pageToSvgCoords(pageX, pageY){
+    const svgRect = ropeSvg.getBoundingClientRect();
+    const svgX = ((pageX - svgRect.left) / svgRect.width) * ropeSvg.viewBox.baseVal.width;
+    const svgY = ((pageY - svgRect.top) / svgRect.height) * ropeSvg.viewBox.baseVal.height;
+    return { x: svgX, y: svgY };
+  }
+
+  function updateAnchors(){
+    anchors.forEach(a => {
+      const rect = a.postEl.getBoundingClientRect();
+      // 计算页面上 anchor-dot 的位置（和你 list 项里的 .anchor-dot 对齐）
+      const pageX = window.scrollX + rect.left - 40 + (a.postEl.querySelector('.anchor-dot')?.offsetWidth || 8)/2;
+      const pageY = window.scrollY + rect.top + rect.height/2;
+      const svgPt = pageToSvgCoords(pageX, pageY);
+      a.svgCircle.setAttribute('cx', svgPt.x);
+      a.svgCircle.setAttribute('cy', svgPt.y);
+      a.svgPos = svgPt;
+    });
+  }
+
+  function computeActiveIndex(){
+    const viewportCenterY = window.scrollY + window.innerHeight/2;
+    let bestIdx=0, bestDist=Infinity;
+    anchors.forEach((a, idx) => {
+      const rect = a.postEl.getBoundingClientRect();
+      const pageCenterY = window.scrollY + rect.top + rect.height/2;
+      const dist = Math.abs(pageCenterY - viewportCenterY);
+      if (dist < bestDist){ bestDist = dist; bestIdx = idx; }
+    });
+    return bestIdx;
+  }
+
+  let activeIndex = computeActiveIndex();
+  let currentGirlY = ropeSvg.viewBox.baseVal.height / 2;
+  let targetGirlY = currentGirlY;
+  let animating = false;
+
+  function animateStep(){
+    animating = true;
+    currentGirlY += (targetGirlY - currentGirlY) * 0.18;
+    const progress = Math.max(0, Math.min(1, currentGirlY / ropeSvg.viewBox.baseVal.height));
+    const frame = Math.floor(progress * (lottieFrames - 1));
+    if (lottieAnim) lottieAnim.goToAndStop(frame, true);
+
+    const svgRect = ropeSvg.getBoundingClientRect();
+    const visualX = svgRect.left + (ropeSvg.viewBox.baseVal.width/2 / ropeSvg.viewBox.baseVal.width) * svgRect.width;
+    const visualY = svgRect.top + (currentGirlY / ropeSvg.viewBox.baseVal.height) * svgRect.height;
+
+    lottieContainer.style.transform = `translate(${visualX - svgRect.left - (lottieContainer.offsetWidth/2)}px, ${visualY - svgRect.top - (lottieContainer.offsetHeight/2)}px)`;
+
+    const gx = ropeSvg.viewBox.baseVal.width / 2;
+    const gy = currentGirlY;
+    const target = anchors[activeIndex];
+    if (target && target.svgPos) {
+      const tx = target.svgPos.x;
+      const ty = target.svgPos.y;
+      const cx = (gx + tx) / 2 + 10;
+      const cy = (gy + ty) / 2 - Math.abs(gx - tx) * 0.15;
+      const d = `M ${gx} ${gy} Q ${cx} ${cy} ${tx} ${ty}`;
+      ropePath.setAttribute('d', d);
+    }
+
+    if (Math.abs(currentGirlY - targetGirlY) < 0.5) {
+      animating = false;
+    } else {
+      requestAnimationFrame(animateStep);
+    }
+  }
+
+  function animateToActive(){
+    activeIndex = computeActiveIndex();
+    const t = anchors[activeIndex];
+    if (!t || !t.svgPos) return;
+    targetGirlY = t.svgPos.y;
+    if (!animating) requestAnimationFrame(animateStep);
+  }
+
+  window.addEventListener('scroll', () => { updateAnchors(); animateToActive(); }, { passive: true });
+  window.addEventListener('resize', () => { updateAnchors(); animateToActive(); });
+
+  // 初始化
+  updateAnchors();
+  animateToActive();
+
+})();
+</script>
