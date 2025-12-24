@@ -1,0 +1,254 @@
+/* =========================
+   posts-progress & inline per-post dot — 优化版
+   - 合并变量，移除重复，增强可调性
+   - 保留响应式与无障碍支持
+   ========================= */
+
+:root{
+  /* ---- track / handle ---- */
+  --pp-track-width: 4px;                    /* 轨道宽度 */
+  --pp-handle-size: 8px;                    /* 小圆点直径 (全局侧边轨道) */
+  --pp-marker-size: 4px;                    /* 侧边刻度 */
+  --pp-track-left: 1.5rem;                  /* 轨道距视口左侧距离（可由 JS 覆盖） */
+
+  /* ---- colors ---- */
+  --pp-track-bg: rgba(100,100,120,0.10);
+  --pp-marker-bg: rgba(100,100,120,0.22);
+  --pp-handle-bg: #0ea5a4;                  /* accent color */
+
+  /* ---- viewport spacing ---- */
+  --pp-viewport-top: 12vh;
+  --pp-viewport-bottom: 12vh;
+
+  /* ---- card / posts spacing ---- */
+  --pp-card-gap: 3em;                       /* 文章间距（可调） */
+  --pp-card-padding-vertical: 1.2rem;
+  --pp-card-padding-horizontal: 1.4rem;
+  --pp-card-radius: 12px;
+  --pp-card-border: rgba(0,0,0,0.06);
+  --pp-card-shadow: 0 8px 24px rgba(0,0,0,0.02);
+  --pp-card-hover-shadow: 0 6px 18px rgba(0,0,0,0.04);
+
+  /* ---- inline dot（per-post） ---- */
+  --inline-dot-size: 8px;
+  --inline-dot-color: rgba(100,100,120,0.20);
+  --inline-dot-active-color: var(--pp-handle-bg);
+  --inline-dot-gap-right: 0.7rem;
+  --inline-dot-left-offset: -1.6rem;
+  --inline-dot-vertical-offset: 18px;       /* 控制竖直位置（可按行高微调） */
+  --inline-dot-scale-active: 1.35;
+  --inline-dot-transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+
+  /* z-index */
+  --pp-z: 30;
+}
+
+/* 添加posts里上方的距离的代码 */
+
+#posts-list,
+.posts-list,
+.site-listing {
+  margin-top: 4rem;   /* 你可以试 1.5rem / 2rem / 3rem */
+}
+
+.posts-title {
+  margin-bottom: 1.25rem;  /* 控制 title 和正文的距离 */
+}
+
+.posts-description {
+  margin-top: 0.25rem;     /* 可选，微调 */
+}
+
+/* -----------------------
+   Track wrapper & base (侧边轨道)
+   ----------------------- */
+.posts-progress-wrapper{ position: relative; }
+
+.posts-progress-track{
+  position: fixed;
+  left: var(--pp-track-left);
+  top: var(--pp-viewport-top);
+  bottom: var(--pp-viewport-bottom);
+  width: calc(var(--pp-track-width) + 10px);
+  z-index: var(--pp-z);
+  display: flex;
+  align-items: center;
+  pointer-events: none; /* allow clicks to pass through except markers */
+}
+
+.posts-progress-track .track-bg{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--pp-track-width);
+  height: 100%;
+  background: var(--pp-track-bg);
+  border-radius: 999px;
+}
+
+.posts-progress-track .track-markers{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 100%;
+  pointer-events: auto; /* markers will handle clicks */
+}
+
+.posts-progress-track .track-marker{
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--pp-marker-size);
+  height: var(--pp-marker-size);
+  border-radius: 50%;
+  background: var(--pp-marker-bg);
+  transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+  cursor: pointer;
+  outline: none;
+  border: none;
+  padding: 0;
+}
+
+.posts-progress-track .track-handle{
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+  width: var(--pp-handle-size);
+  height: var(--pp-handle-size);
+  border-radius: 50%;
+  background: var(--pp-handle-bg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  transition: transform 240ms cubic-bezier(.2,.9,.25,1);
+  pointer-events: none;
+}
+
+.posts-progress-track .track-marker.is-active{
+  transform: translate(-50%, -50%) scale(1.25);
+  background: var(--pp-handle-bg);
+  box-shadow: 0 0 0 6px rgba(14,165,164,0.06);
+}
+
+/* hide on small screens (configurable) */
+@media (max-width:900px){
+  .posts-progress-track{ display: none; }
+}
+
+/* respects reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .posts-progress-track .track-handle,
+  .posts-progress-track .track-marker{
+    transition: none !important;
+  }
+}
+
+/* -----------------------
+   Posts card / spacing
+   ----------------------- */
+/* 合并控制，优先匹配常见结构，避免高特异性覆盖问题 */
+.posts-list > .post-item,
+#posts-list > .post-item,
+.site-listing > .list-item,
+article.post-item,
+article.list-item,
+section.posts-list article,
+section.site-listing article{
+  display: block;
+  margin-bottom: var(--pp-card-gap);
+  padding: var(--pp-card-padding-vertical) var(--pp-card-padding-horizontal);
+  background: transparent;
+  border-radius: var(--pp-card-radius);
+  border: 1px solid var(--pp-card-border);
+  box-shadow: var(--pp-card-shadow);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+
+/* hover 微交互 */
+.posts-list > .post-item:hover,
+#posts-list > .post-item:hover,
+article.post-item:hover,
+article.list-item:hover{
+  transform: translateY(-3px);
+  box-shadow: var(--pp-card-hover-shadow);
+}
+
+/* 标题与摘要间距 */
+.post-item-header{ margin-bottom: 0.5rem; }
+.post-item-summary,
+.summary{ margin-top: 0.25rem; color: rgba(0,0,0,0.75); }
+
+/* 手机端收紧 */
+@media (max-width:900px){
+  .posts-list > .post-item,
+  #posts-list > .post-item,
+  article.post-item,
+  article.list-item{
+    margin-bottom: calc(var(--pp-card-gap) * 0.6);
+    padding: 0.9rem;
+    border-radius: 6px;
+  }
+}
+
+/* -----------------------------
+   Inline per-post dot (visual)
+   ----------------------------- */
+
+/* article 做为定位锚点 */
+.post-item { position: relative; }
+
+/* 基础样式 — 绝对定位在卡片左侧（桌面默认）*/
+.post-inline-dot {
+  position: absolute;
+  left: var(--inline-dot-left-offset);
+  top: var(--inline-dot-vertical-offset);
+  width: var(--inline-dot-size);
+  height: var(--inline-dot-size);
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--inline-dot-color);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+  transform: scale(1);
+  transition: var(--inline-dot-transition);
+  pointer-events: auto;   /* allow click if desired */
+  cursor: pointer;
+  z-index: 12;
+}
+
+/* 备选：把 dot 放入文流（标题左侧），通过给 article 加 .inline-dot-inflow 控制 */
+.post-item.inline-dot-inflow .post-inline-dot {
+  position: static;
+  margin-right: var(--inline-dot-gap-right);
+  top: auto;
+  left: auto;
+  transform-origin: center center;
+}
+
+/* 激活态样式（通过 .post-item.is-active 或 .post-inline-dot.is-active 触发）*/
+.post-item.is-active .post-inline-dot,
+.post-inline-dot.is-active {
+  background: var(--inline-dot-active-color);
+  transform: scale(var(--inline-dot-scale-active));
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+/* 强化可访问：键盘 focus 可见 */
+.post-inline-dot:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 6px rgba(14,165,164,0.10);
+}
+
+/* 移动端：默认把点内联，避免遮挡 */
+@media (max-width:900px) {
+  .post-inline-dot {
+    position: static;
+    margin-right: 0.6rem;
+    top: auto;
+    left: auto;
+  }
+}
+
+/* 兼容：当用户偏好减少动效时，禁用 transform */
+@media (prefers-reduced-motion: reduce) {
+  .post-inline-dot { transition: none; transform: none; }
+  .post-item.is-active .post-inline-dot { transform: none; }
+}

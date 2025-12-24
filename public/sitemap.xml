@@ -14,6 +14,18 @@
     <loc>http://localhost:1313/posts/hello-world/</loc>
     <lastmod>2025-12-22T00:00:00+00:00</lastmod>
   </url><url>
+    <loc>http://localhost:1313/posts/post_2/</loc>
+    <lastmod>2025-12-22T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/post_3/</loc>
+    <lastmod>2025-12-22T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/post_4/</loc>
+    <lastmod>2025-12-22T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/post_5/</loc>
+    <lastmod>2025-12-22T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>http://localhost:1313/posts/</loc>
     <lastmod>2025-12-22T00:00:00+00:00</lastmod>
   </url><url>

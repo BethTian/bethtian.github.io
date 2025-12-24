@@ -1,0 +1,47 @@
+{{ define "main" }}
+  <!-- This is a posts-specific override. If present, Hugo will prefer this for the posts section. -->
+  {{ partial "posts/progress-track.html" . }}
+  <div class="posts-intro">
+    <!-- <h1 class="posts-title">Posts</h1> -->
+    <div class="posts-description">
+    {{ with .Content }}
+      <div class="posts-intro">
+        {{ with $.Title }}
+          <h1 class="posts-title">{{ . }}</h1>
+        {{ end }}
+        {{ . | safeHTML }}
+      </div>
+    {{ end }}
+    </div>
+  </div>
+  <section id="posts-list">
+    {{ $pages := (.Pages).ByDate.Reverse }}
+    {{ range $i, $p := $pages }}
+    <article class="post-item" id="post-{{ $p.File.BaseFileName }}">
+
+      <!-- 👇 每个 post 自己的点（现在只是占位） -->
+      <span class="post-inline-dot" aria-hidden="true"></span>
+
+      <header class="post-item-header">
+        <h2 class="post-item-title">
+          <a href="{{ $p.RelPermalink }}">{{ $p.Title }}</a>
+        </h2>
+
+        <p class="meta">
+          {{ with $p.Date }}{{ .Format "2006-01-02" }}{{ end }}
+        </p>
+      </header>
+
+      <div class="summary">
+        {{ if $p.Summary }}
+          {{ $p.Summary }}
+        {{ else }}
+          {{ $p.Plain | truncate 200 }}
+        {{ end }}
+      </div>
+
+    </article>
+
+    {{ end }}
+  </section>
+{{ end }}
