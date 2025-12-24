@@ -14,10 +14,10 @@ theme = "PaperMod"
 
 [params.profileMode]
 enabled = true
-title = "Beth Tian"
+title = "Wenjia (Beth) Tian"
 subtitle = "Master Student · Risk Engineering · Duke University"
 imageUrl = "/images/profilepic.jpeg"
-imageTitle = "Beth Tian"
+imageTitle = "Wenjia (Beth) Tian"
 imageWidth = 160
 imageHeight = 160
 

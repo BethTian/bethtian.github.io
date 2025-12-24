@@ -3,9 +3,7 @@ title: "CV"
 date: 2025-12-22
 draft: false
 ---
-# Curriculum Vitae
-
-**Wenjia (Beth) Tian**  
+# Wenjia (Beth) Tian  
 M.Eng. in Risk Engineering, Duke University  
 
 📧 Email: beth.tian@duke.edu  
